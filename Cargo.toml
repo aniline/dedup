@@ -1,0 +1,9 @@
+[package]
+name = "dedup"
+version = "0.1.0"
+authors = ["Anil N <anilknyn@fastmail.fm>"]
+description = "Duplicate of https://github.com/vu3rdd/dedup"
+license = "GPL-3.0"
+
+[dependencies]
+rust-crypto = "^0.2"
