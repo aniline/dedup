@@ -8,7 +8,7 @@ use std::fs::read_dir;
 use std::fs::File;
 use std::fs::metadata;
 use std::path::{Path, PathBuf};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use crypto::md5::Md5;
 use crypto::digest::Digest;
@@ -61,13 +61,19 @@ fn main() {
                 .filter(|&(_, ref md, ref hash)| md.is_ok() && hash.is_ok())
                 .map(|(n, md, hash)| (n, md.unwrap().len(), hash.unwrap()));
 
-            let mut table: HashMap<Vec<u8>, Vec<(&PathBuf, u64)>> = HashMap::new();
+            let mut table: BTreeMap<Vec<u8>, Vec<(&PathBuf, u64)>> = BTreeMap::new();
 
             for (nam, siz, hash) in it_det {
-                table.entry(hash).or_insert(vec![]).push((nam, siz));
+                let ref mut v = table.entry(hash).or_insert(vec![]);
+                v.push((nam, siz));
+                v.sort_unstable();
             }
+
             for (_, val) in table.iter().filter(|&(_, ref v)| v.len() > 1) {
-                println!("{} {}", val[0].1, val.iter().map(|&(ref n, _)| n.to_str().unwrap()).collect::<Vec<&str>>().join(" "));
+                println!("{} {}", val[0].1,
+                         val.iter()
+                         .map(|&(ref n, _)| n.to_str().unwrap().replace("\\", "\\\\").replace(" ", "\\ "))
+                         .collect::<Vec<String>>().join(" "));
             }
         }
     }
